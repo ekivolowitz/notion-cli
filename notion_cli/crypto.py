@@ -70,6 +70,7 @@ def symmetric_encrypt(args):
     key = _get_key(args.key)
     if key is None:
         logging.error("Key does not exist.")
+        print(f"The key: \"{args.key}\" does not exist. Please generate a key with the gen-key command and retry")
         return None
     if type(key) != bytes:
         logging.error("Type of key is not bytes.")

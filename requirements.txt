@@ -1,2 +1,2 @@
 notion-py
-
+pycryptodome
