@@ -3,6 +3,12 @@ Unofficial notion cli client.
 
 There are features I wanted to see on Notion. This is a CLI tool that has that extended functionality. This CLI is built on [notion-py](https://github.com/jamalex/notion-py)
 
+The first feature I built in was a symmetric encrypt/decrypt tool that allows you to encrypt part of a block so that you and the people you share the key with can decrypt it locally on your or their machine. This addresses the issue presented by Chet from the Notion team about why Notion doesn't support End to End Encryption: "End-to-end encrypted search is a fundamentally challenging problem. We use Elasticsearch which has all kinds of fancy language models to make your search results better. I'm not sure this is possible to do with e2e encryption. An alternative would be to have an encrypted-at-rest local elasticsearch cluster running in your desktop/mobile app. This is surely going to churn away your CPU/memory though."
+
+This allows for your document to remain unencrypted **EXCEPT** for the sections that you choose to be encrypted. It puts the power of security in your hands, which I like. Very Niiiiice.
+
+I have a million and two features I'd like to implement, but I just started this a couple of hours ago and I'm very tired. I'll be adding new features soon. One that I'm excited about is asymmetric cryptography support so that you can deliver data on your document to specific people and you won't have to share a key with them!
+
 ## Usage
 ### Quickstart
 * Obtain the `token_v2` cookie in your browser while on Notion and export it like so:
