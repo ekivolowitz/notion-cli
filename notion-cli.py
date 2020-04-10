@@ -13,8 +13,11 @@ from notion_cli.crypto import encrypt, decrypt
 from notion_cli.genkey import gen_key
 
 TOKEN_V2 = os.environ['TOKEN_V2']
-if os.environ['LOG_LEVEL'] == '0':
-    logging.disable()
+try:
+    if os.environ['LOG_LEVEL'] == '0':
+        logging.disable()
+except:
+    logging.info("No LOG_LEVEL environment variable set. Defaulting to logging all outputs")
 else:
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
@@ -26,7 +29,7 @@ def parser():
 
     encrypt_parser = subparsers.add_parser('encrypt', help='Encrypt sub command')
     decrypt_parser = subparsers.add_parser('decrypt', help='Decrypt sub command')
-    key_parser = subparsers.add_parser('gen-key', help='Generate a key to encrypt with.')
+    key_parser = subparsers.add_parser('gen-key', help='Generate a key to encrypt or decrypt (assuming you will encrypt with the same key) with.')
 
     encrypt_parser.add_argument('--asymmetric', action='store_true', help='Use asymmetric encryption')
     encrypt_parser.add_argument('--symmetric', action='store_true', help='Use symmetric encryption')
@@ -40,14 +43,20 @@ def parser():
 
 
     key_parser.add_argument('output', help='Output file for the newly generated key.')
-
+    key_parser.add_argument('--asymmetric', action='store_true', help='Use asymmetric decryption')
+    key_parser.add_argument('--symmetric', action='store_true', help='Use symmetric decryption')
+ 
 
     key_parser.set_defaults(func=gen_key)
     encrypt_parser.set_defaults(func=encrypt)
     decrypt_parser.set_defaults(func=decrypt)
-    return parser.parse_args()
+
+    return parser.parse_args(), parser
 
 if __name__ == '__main__':
     client = NotionClient(TOKEN_V2)
-    args = parser()
-    args.func(args)
+    args, parser = parser()
+    try:
+        args.func(args)
+    except AttributeError:
+        parser.print_help()
