@@ -13,7 +13,6 @@ from notion_cli.crypto import encrypt, decrypt
 from notion_cli.genkey import gen_key
 from notion_cli.download_block import download_block
 
-TOKEN_V2 = os.environ['TOKEN_V2']
 if os.environ['LOG_LEVEL'] == '0':
     logging.disable()
 else:
@@ -58,6 +57,5 @@ def parser():
     return parser.parse_args()
 
 if __name__ == '__main__':
-    client = NotionClient(TOKEN_V2)
     args = parser()
     args.func(args)
