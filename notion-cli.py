@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
-from pprint import pprint
+import sys
 import time
 import requests
 import logging
@@ -11,16 +11,18 @@ from notion_cli.crypto import encrypt, decrypt
 from notion_cli.genkey import gen_key
 from notion_cli.download_block import download_block
 
-if os.environ['LOG_LEVEL'] == '0':
-    logging.disable()
-TOKEN_V2 = os.environ['TOKEN_V2']
+try:
+    TOKEN_V2 = os.environ['TOKEN_V2']
+except:
+    logging.error("Must provide a token to access notion with.")
+    sys.exit(1)
 try:
     if os.environ['LOG_LEVEL'] == '0':
         logging.disable()
+    else:
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 except:
     logging.info("No LOG_LEVEL environment variable set. Defaulting to logging all outputs")
-else:
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
 def parser():
@@ -44,11 +46,12 @@ def parser():
     decrypt_parser.add_argument('block_id', type=str, help='Notion.so block to decrypt')
 
     download_parser.add_argument('block_id', type=str, help='ID of the block to download')
-    download_parser.add_argument('export_type', type=str, help='Type of the output file. Options are \'markdown\', \'pdf\', and \'html\'')
+    download_parser.add_argument('--export_type', type=str, help='Type of the output file. Options are \'markdown\', \'pdf\', and \'html\'')
     download_parser.add_argument('--event-name', type=str, help='Notion object you\'re exporting. Defaults to \'exportBlock\'.')
     download_parser.add_argument('--recursive', action='store_true', help='Recursively download all sub-blocks of this block. Defaults to false.')
     download_parser.add_argument('--time-zone', type=str, help='Timezone you\'re in. Defaults to \"America/Chicago\"')
-    download_parser.add_argument('--locale', type='str', help='Locale options. Defaults to \'en\'')
+    download_parser.add_argument('--locale', type=str, help='Locale options. Defaults to \'en\'')
+    download_parser.add_argument('--disable-page-block-only', action='store_true', help="Will download any type of block, not just page blocks.")
     
 
     key_parser.add_argument('output', help='Output file for the newly generated key.')
@@ -60,7 +63,8 @@ def parser():
     encrypt_parser.set_defaults(func=encrypt)
     decrypt_parser.set_defaults(func=decrypt)
     download_parser.set_defaults(func=download_block)
-    return parser.parse_args()
+
+    return parser.parse_args(), parser
 
 if __name__ == '__main__':
     args, parser = parser()

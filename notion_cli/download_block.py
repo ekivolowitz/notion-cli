@@ -1,7 +1,11 @@
 import time
 import os
+import logging
+
+from .client import get_client
 from requests import Session, HTTPError, get
 from zipfile import ZipFile
+from notion.block import PageBlock
 
 def _get_task_id(response):
     """
@@ -20,6 +24,7 @@ def _download_url(url, save_path, chunk_size=128):
     chunk_size = size of the chunk. This is adjustable. See the documentation for more info.
     """
     r = get(url, stream=True)
+    logging.info(f'save_path: {save_path}')
     with open(save_path, 'wb') as fd:
         for chunk in r.iter_content(chunk_size=chunk_size):
             fd.write(chunk)
@@ -36,7 +41,7 @@ def _unzip_file(file, delete=True):
         os.remove(file)
 
 
-def download_block(client, block_id, export_type, event_name="exportBlock", recursive=False, time_zone="America/Chicago", locale="en"):
+def _download_block(client, block_id, export_type='markdown', event_name="exportBlock", recursive=False, time_zone="America/Chicago", locale="en", disable_page_block_only=False):
     """
     block_id - id of the block. Should be a string.
     export_type - Type of the output file. The options are 'markdown', 'pdf', 'html'
@@ -47,9 +52,14 @@ def download_block(client, block_id, export_type, event_name="exportBlock", recu
     TODO: If export_type are 'pdf' or 'html', there is another field in exportOptions called 'pdfFormat'. It should be set to "Letter".
           This needs to be implemented.
     TODO: Add support for downloading a list of blocks
-    TODO: Review this code. Does it suck? Error handling? This is version 0 of this method and my first open source contribution.
-          Give me some criticisms so I can improve as a programmer!
     """
+
+    block = client.get_block(block_id)
+
+    if not disable_page_block_only and type(block) != PageBlock:
+        print("PageBlockOnly mode enabled. Please rerun command with the flag --disable-page-block-only")
+        return False
+
     tmp_zip = 'tmp.zip'
     data = {
         "task" : {
@@ -86,3 +96,17 @@ def download_block(client, block_id, export_type, event_name="exportBlock", recu
 
     _download_url(url, tmp_zip)
     _unzip_file(tmp_zip)
+    return True
+
+def download_block(args):
+
+    data = {}
+
+    client = get_client()
+
+    for arg in vars(args):
+        key, value = arg, getattr(args, arg)
+        if key not in ['block_id', 'func'] and value != None:
+                data[key] = value 
+
+    return _download_block(client, args.block_id, **data)
