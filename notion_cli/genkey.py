@@ -1,5 +1,6 @@
 import logging
 
+from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 
 def gen_symmetric_key(args):
@@ -28,6 +29,14 @@ def gen_asymmetric_key(args):
 
     '''
     logging.info("Generating asymmetric key combo")
+
+    key = RSA.generate(2048)
+   
+    with open(args.output, 'wb') as f:
+        f.write(key.export_key('PEM'))
+    with open(args.output + '.pub', 'wb') as f:
+        f.write(key.publickey().export_key('PEM'))
+    logging.info(f'Generated pub/priv key combo: {args.output}, {args.output}.pub')
 
 def gen_key(args):
     if args.symmetric:
