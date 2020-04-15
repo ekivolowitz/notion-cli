@@ -2,6 +2,8 @@ import os
 import logging
 import re
 
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from cryptography.fernet import Fernet
 from .client import get_client
 
@@ -20,7 +22,7 @@ def _get_key(filepath):
     with open(filepath, 'rb') as f:
         return f.read()
 
-def _encrypt_plaintext(key, plaintext):
+def _symmetric_encrypt_plaintext(key, plaintext):
     f = Fernet(key)
 
     if type(plaintext) == str:
@@ -38,7 +40,7 @@ def _encrypt_plaintext(key, plaintext):
 
     return cipher
 
-def _decrypt_ciphertext(key, ciphertext):
+def _symmetric_decrypt_ciphertext(key, ciphertext):
     f = Fernet(key)
 
     if type(ciphertext) == str:
@@ -50,6 +52,12 @@ def _decrypt_ciphertext(key, ciphertext):
     plaintext = f.decrypt(ciphertext)
 
     return plaintext
+
+def _asymmetric_encrypt_plaintext(key, plaintext):
+    pass
+
+def _asymmetric_decrypt_ciphertext(key, ciphertext):
+    pass
 
 def _find_text_to_use(block):
     text = block.title
@@ -63,7 +71,6 @@ def _find_text_to_use(block):
     end = text.find(END)
 
     return text[start + 1: end - 1]
-
 
 def symmetric_encrypt(args):
     client = get_client()
@@ -81,7 +88,7 @@ def symmetric_encrypt(args):
     plaintext = _find_text_to_use(block)
 
     if plaintext != None:
-        block.title = block.title.replace(plaintext, _encrypt_plaintext(key, plaintext))
+        block.title = block.title.replace(plaintext, _symmetric_encrypt_plaintext(key, plaintext))
 
 
 def symmetric_decrypt(args):
@@ -98,13 +105,36 @@ def symmetric_decrypt(args):
 
     ciphertext = _find_text_to_use(block)
 
-    print(_decrypt_ciphertext(key, ciphertext).decode('utf8'))
+    print(_symmetric_decrypt_ciphertext(key, ciphertext).decode('utf8'))
 
 def asymmetric_encrypt(args):
-    pass
+    print("No yet supported")
+    '''
+    client = get_client()
+
+    key = _get_key(args.key)
+    
+    if key is None:
+        logging.error('Key does not exist')
+        return None
+
+    if type(key) != bytes:
+        logging.error("Type of key is not bytes.")
+        return None
+    
+    block = client.get_block(args.block_id)
+
+    plaintext = _find_text_to_use(block)
+
+    if plaintext != None:
+        data = _asymmetric_encrypt_plaintext(key, plaintext)
+        print(data.decode('cp1252'))
+        # block.title = block.title.replace(plaintext, _asymmetric_encrypt_plaintext(key, plaintext))
+    '''
+    
 
 def asymmetric_decrypt(args):
-    pass
+    print("Not yet supported")
 
 
 def encrypt(args):
@@ -115,6 +145,7 @@ def encrypt(args):
     else:
         logging.error("Encryption must be symmetric or asymmetric")
         print("You must specify either --symmetric or --asymmetric")
+
 def decrypt(args):
     if args.symmetric:
         symmetric_decrypt(args)

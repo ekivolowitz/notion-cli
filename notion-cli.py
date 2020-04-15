@@ -57,6 +57,8 @@ def parser():
     key_parser.add_argument('output', help='Output file for the newly generated key.')
     key_parser.add_argument('--asymmetric', action='store_true', help='Use asymmetric decryption')
     key_parser.add_argument('--symmetric', action='store_true', help='Use symmetric decryption')
+
+    
  
 
     key_parser.set_defaults(func=gen_key)
